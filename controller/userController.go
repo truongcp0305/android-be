@@ -18,7 +18,7 @@ func NewUserController(u *service.UserService) UserController {
 }
 
 type UserIdPath struct {
-	Id string `json:"param"`
+	Id string `param:"id"`
 }
 
 type LoginParams struct {

@@ -91,6 +91,34 @@ func (s *SpenController) UpdateSpend(c echo.Context) error {
 	})
 }
 
+func (s *SpenController) GetById(c echo.Context) error {
+	var params UserIdPath
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(400, "bad query params")
+	}
+	spend, err := s.spend.GetBill(params.Id)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, spend)
+}
+
+func (s *SpenController) GetInWeek(c echo.Context) error {
+	var params UserIdPath
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(400, "bad query params")
+	}
+	spends, err := s.spend.GetInWeek(params.Id)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, map[string]interface{}{
+		"data": spends,
+	})
+}
+
 func (s *SpenController) Delete(c echo.Context) error {
 	var params UserIdPath
 	err := c.Bind(&params)

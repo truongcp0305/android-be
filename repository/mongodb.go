@@ -45,6 +45,18 @@ func (d *Database) Login(user *model.User) (model.User, error) {
 	return us[0], nil
 }
 
+func (d *Database) GetSpendInWeek(time int64, uid string) ([]model.Spending, error) {
+	filter := bson.M{
+		"user_id":   uid,
+		"timestamp": bson.M{"$gt": time},
+	}
+	c, err := d.s.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return lib.ParseSpending(c)
+}
+
 func (d *Database) GetListSpendByUid(uid string) ([]model.Spending, error) {
 	filter := bson.M{"user_id": uid}
 	c, err := d.s.Find(context.Background(), filter)
@@ -52,6 +64,22 @@ func (d *Database) GetListSpendByUid(uid string) ([]model.Spending, error) {
 		return nil, err
 	}
 	return lib.ParseSpending(c)
+}
+
+func (d *Database) GetSpend(id string) (model.Spending, error) {
+	filter := bson.M{"id": id}
+	c, err := d.s.Find(context.Background(), filter)
+	if err != nil {
+		return model.Spending{}, err
+	}
+	us, err := lib.ParseSpending(c)
+	if err != nil {
+		return model.Spending{}, err
+	}
+	if len(us) == 0 {
+		return model.Spending{}, errors.New("not found")
+	}
+	return us[0], nil
 }
 
 func (d *Database) GetListplanByUid(uid string) ([]model.Plan, error) {

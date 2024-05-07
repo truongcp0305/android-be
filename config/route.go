@@ -24,6 +24,19 @@ func NewRoute(e *echo.Echo, app AppController) {
 		return app.U.Registry(c)
 	})
 
+	e.POST("/bill", func(c echo.Context) error {
+		return app.S.CreateSpend(c)
+	})
+	e.GET("/bill/:id", func(c echo.Context) error {
+		return app.S.ListSpend(c)
+	})
+	e.GET("/spend/:id", func(c echo.Context) error {
+		return app.S.GetById(c)
+	})
+	e.GET("/spend/in-week/:id", func(c echo.Context) error {
+		return app.S.GetInWeek(c)
+	})
+
 	e.GET("", func(c echo.Context) error {
 		return c.JSON(200, "ok")
 	})
