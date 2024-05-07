@@ -10,8 +10,7 @@ import (
 
 func Connn() *mongo.Database {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	u := "mongodb+srv://nguyentruongcp35:123456@cluster0.zrvxwix.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-	opts := options.Client().ApplyURI(u).SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI("mongodb+srv://nguyentruongcp35:Aa123456@cluster0.zrvxwix.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0").SetServerAPIOptions(serverAPI)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, opts)
@@ -19,5 +18,8 @@ func Connn() *mongo.Database {
 		panic(err)
 	}
 	database := client.Database("product")
+	if err = database.Client().Ping(context.Background(), nil); err != nil {
+		panic(err)
+	}
 	return database
 }

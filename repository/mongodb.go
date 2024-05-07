@@ -54,6 +54,15 @@ func (d *Database) GetListSpendByUid(uid string) ([]model.Spending, error) {
 	return lib.ParseSpending(c)
 }
 
+func (d *Database) GetListplanByUid(uid string) ([]model.Plan, error) {
+	filter := bson.M{"user_id": uid}
+	c, err := d.s.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return lib.ParsePlan(c)
+}
+
 func (d *Database) InsertPlan(plan *model.Plan) error {
 	_, err := d.p.InsertOne(context.Background(), plan)
 	return err
@@ -67,6 +76,25 @@ func (d *Database) InsertSpend(spend *model.Spending) error {
 func (d *Database) UpdateSpend(spend *model.Spending) error {
 	filter := bson.M{"id": spend.Id}
 	update := bson.M{"$set": spend}
+	_, err := d.s.UpdateOne(context.TODO(), filter, update)
+	return err
+}
+
+func (d *Database) DeleteSpend(id string) error {
+	filter := bson.M{"id": id}
+	_, err := d.s.DeleteOne(context.Background(), filter)
+	return err
+}
+
+func (d *Database) UpdatePlan(plan *model.Plan) error {
+	filter := bson.M{"id": plan.Id}
+	update := bson.M{"$set": plan}
 	_, err := d.p.UpdateOne(context.TODO(), filter, update)
+	return err
+}
+
+func (d *Database) DeletePlan(id string) error {
+	filter := bson.M{"id": id}
+	_, err := d.p.DeleteOne(context.Background(), filter)
 	return err
 }
