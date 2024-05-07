@@ -1,28 +1,72 @@
 package repository
 
 import (
+	"android-be/lib"
 	"android-be/model"
+	"context"
+	"errors"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Database struct {
 	s *mongo.Collection
 	p *mongo.Collection
+	u *mongo.Collection
+}
+
+func NewDatabase(s *mongo.Collection, p *mongo.Collection, u *mongo.Collection) *Database {
+	return &Database{
+		s: s,
+		p: p,
+		u: u,
+	}
+}
+
+func (d *Database) CreateUser(u *model.User) error {
+	_, err := d.u.InsertOne(context.Background(), u)
+	return err
+}
+
+func (d *Database) Login(user *model.User) (model.User, error) {
+	filter := bson.M{"username": user.Username, "password": user.Password}
+	c, err := d.u.Find(context.Background(), filter)
+	if err != nil {
+		return model.User{}, err
+	}
+	us, err := lib.ParseUser(c)
+	if err != nil {
+		return model.User{}, err
+	}
+	if len(us) == 0 {
+		return model.User{}, errors.New("not found")
+	}
+	return us[0], nil
 }
 
 func (d *Database) GetListSpendByUid(uid string) ([]model.Spending, error) {
-	return []model.Spending{}, nil
+	filter := bson.M{"user_id": uid}
+	c, err := d.s.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return lib.ParseSpending(c)
 }
 
 func (d *Database) InsertPlan(plan *model.Plan) error {
-	return nil
+	_, err := d.p.InsertOne(context.Background(), plan)
+	return err
 }
 
 func (d *Database) InsertSpend(spend *model.Spending) error {
-	return nil
+	_, err := d.s.InsertOne(context.Background(), spend)
+	return err
 }
 
 func (d *Database) UpdateSpend(spend *model.Spending) error {
-	return nil
+	filter := bson.M{"id": spend.Id}
+	update := bson.M{"$set": spend}
+	_, err := d.p.UpdateOne(context.TODO(), filter, update)
+	return err
 }
