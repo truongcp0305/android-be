@@ -3,6 +3,7 @@ package service
 import (
 	"android-be/model"
 	"android-be/repository"
+	"time"
 )
 
 type PlanService struct {
@@ -20,6 +21,7 @@ func (p *PlanService) ListPlan(uid string) ([]model.Plan, error) {
 }
 
 func (p *PlanService) Create(plan *model.Plan) error {
+	plan.Timestamp = time.Now().UnixMilli()
 	err := p.repo.InsertPlan(plan)
 	return err
 }

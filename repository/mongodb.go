@@ -126,3 +126,15 @@ func (d *Database) DeletePlan(id string) error {
 	_, err := d.p.DeleteOne(context.Background(), filter)
 	return err
 }
+
+func (d *Database) GetSpendBetweenTime(uid string, start int64, end int64) ([]model.Spending, error) {
+	filter := bson.M{
+		"user_id":   uid,
+		"timestamp": bson.M{"$gt": start, "$lt": end},
+	}
+	c, err := d.s.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return lib.ParseSpending(c)
+}
