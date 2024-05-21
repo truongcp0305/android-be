@@ -31,5 +31,5 @@ func StartApp() {
 
 	config.NewRoute(e, ac)
 
-	go e.Logger.Fatal(e.Start("192.168.1.14:1234"))
+	go e.Logger.Fatal(e.Start("192.168.1.26:1234"))
 }

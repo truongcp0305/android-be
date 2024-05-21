@@ -23,6 +23,9 @@ func NewRoute(e *echo.Echo, app AppController) {
 	e.POST("/user/register", func(c echo.Context) error {
 		return app.U.Registry(c)
 	})
+	e.GET("/user/:id", func(c echo.Context) error {
+		return app.U.GetInfo(c)
+	})
 
 	e.POST("/spend", func(c echo.Context) error {
 		return app.S.CreateSpend(c)
@@ -46,14 +49,18 @@ func NewRoute(e *echo.Echo, app AppController) {
 	e.POST("/plan", func(c echo.Context) error {
 		return app.P.Create(c)
 	})
-	e.GET("/plans/:id", func(c echo.Context) error {
+	e.GET("/plan/:id", func(c echo.Context) error {
 		return app.P.ListPlan(c)
 	})
 	e.PUT("/plan", func(c echo.Context) error {
 		return app.P.Update(c)
 	})
-	e.DELETE("/plan/:id", func(c echo.Context) error {
+	e.DELETE("/plan", func(c echo.Context) error {
 		return app.P.Delete(c)
+	})
+
+	e.GET("/plan/key", func(c echo.Context) error {
+		return app.P.GetByKey(c)
 	})
 
 	e.GET("", func(c echo.Context) error {

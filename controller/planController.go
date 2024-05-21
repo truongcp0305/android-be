@@ -61,15 +61,35 @@ func (p *PlanController) Update(c echo.Context) error {
 }
 
 func (p *PlanController) Delete(c echo.Context) error {
-	var params UserIdPath
+	var params GetByKey
 	err := c.Bind(&params)
 	if err != nil {
 		return c.JSON(400, "bad query params")
 	}
-	if err = p.plan.Delete(params.Id); err != nil {
+	if err = p.plan.Delete(params.Id, params.Key); err != nil {
 		return c.JSON(500, err)
 	}
 	return c.JSON(200, map[string]interface{}{
 		"data": "Success",
+	})
+}
+
+type GetByKey struct {
+	Id  string `param:"id"`
+	Key string `param:"key"`
+}
+
+func (p *PlanController) GetByKey(c echo.Context) error {
+	var params GetByKey
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(400, "bad query params")
+	}
+	plans, err := p.plan.GetByKey(params.Id, params.Key)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, map[string]interface{}{
+		"data": plans,
 	})
 }

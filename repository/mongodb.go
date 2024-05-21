@@ -45,6 +45,22 @@ func (d *Database) Login(user *model.User) (model.User, error) {
 	return us[0], nil
 }
 
+func (d *Database) GetUserInfo(id string) (model.User, error) {
+	filter := bson.M{"id": id}
+	c, err := d.u.Find(context.Background(), filter)
+	if err != nil {
+		return model.User{}, err
+	}
+	us, err := lib.ParseUser(c)
+	if err != nil {
+		return model.User{}, err
+	}
+	if len(us) == 0 {
+		return model.User{}, errors.New("not found")
+	}
+	return us[0], nil
+}
+
 func (d *Database) GetSpendInWeek(time int64, uid string) ([]model.Spending, error) {
 	filter := bson.M{
 		"user_id":   uid,
@@ -84,7 +100,7 @@ func (d *Database) GetSpend(id string) (model.Spending, error) {
 
 func (d *Database) GetListplanByUid(uid string) ([]model.Plan, error) {
 	filter := bson.M{"user_id": uid}
-	c, err := d.s.Find(context.Background(), filter)
+	c, err := d.p.Find(context.Background(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -115,14 +131,14 @@ func (d *Database) DeleteSpend(id string) error {
 }
 
 func (d *Database) UpdatePlan(plan *model.Plan) error {
-	filter := bson.M{"id": plan.Id}
+	filter := bson.M{"user_id": plan.UserId, "key": plan.Key}
 	update := bson.M{"$set": plan}
 	_, err := d.p.UpdateOne(context.TODO(), filter, update)
 	return err
 }
 
-func (d *Database) DeletePlan(id string) error {
-	filter := bson.M{"id": id}
+func (d *Database) DeletePlan(id string, key string) error {
+	filter := bson.M{"user_id": id, "key": key}
 	_, err := d.p.DeleteOne(context.Background(), filter)
 	return err
 }
@@ -137,4 +153,13 @@ func (d *Database) GetSpendBetweenTime(uid string, start int64, end int64) ([]mo
 		return nil, err
 	}
 	return lib.ParseSpending(c)
+}
+
+func (d *Database) GetPlanByKey(uid string, key string) ([]model.Plan, error) {
+	filter := bson.M{"user_id": uid, "key": key}
+	c, err := d.s.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	return lib.ParsePlan(c)
 }

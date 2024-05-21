@@ -29,3 +29,7 @@ func (s *UserService) CreateUser(u *model.User) (string, error) {
 	}
 	return u.Id, nil
 }
+
+func (s *UserService) GetInfo(id string) (model.User, error) {
+	return s.repo.GetUserInfo(id)
+}

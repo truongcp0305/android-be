@@ -69,3 +69,16 @@ func (u *UserController) Registry(c echo.Context) error {
 		"id": uid,
 	})
 }
+
+func (u *UserController) GetInfo(c echo.Context) error {
+	var params UserIdPath
+	err := c.Bind(&params)
+	if err != nil {
+		return c.JSON(400, "bad query params")
+	}
+	user, err := u.user.GetInfo(params.Id)
+	if err != nil {
+		return c.JSON(500, err)
+	}
+	return c.JSON(200, user)
+}
