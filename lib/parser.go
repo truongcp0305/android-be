@@ -71,3 +71,24 @@ func ParseUser(cursor *mongo.Cursor) ([]model.User, error) {
 
 	return users, nil
 }
+
+func ParseAdmin(cursor *mongo.Cursor) ([]model.AdModel, error) {
+	var users []model.AdModel
+	defer cursor.Close(context.TODO())
+	for cursor.Next(context.TODO()) {
+		var user model.AdModel
+		err := cursor.Decode(&user)
+		if err != nil {
+			log.Printf("Error decoding plan: %v\n", err)
+			return nil, errors.New("internal server error")
+		}
+		users = append(users, user)
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Printf("Error iterating over admin: %v\n", err)
+		return nil, errors.New("internal server error")
+	}
+
+	return users, nil
+}

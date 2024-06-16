@@ -5,23 +5,83 @@ import (
 	"android-be/model"
 	"context"
 	"errors"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Database struct {
 	s *mongo.Collection
 	p *mongo.Collection
 	u *mongo.Collection
+	a *mongo.Collection
 }
 
-func NewDatabase(s *mongo.Collection, p *mongo.Collection, u *mongo.Collection) *Database {
+func NewDatabase(s *mongo.Collection, p *mongo.Collection, u *mongo.Collection, a *mongo.Collection) *Database {
 	return &Database{
 		s: s,
 		p: p,
 		u: u,
+		a: a,
 	}
+}
+
+func (d *Database) AdminLogin(ad *model.AdModel) error {
+	filter := bson.M{"username": ad.Username, "password": ad.Password}
+	c, err := d.a.Find(context.Background(), filter)
+	if err != nil {
+		return err
+	}
+	us, err := lib.ParseUser(c)
+	if err != nil {
+		return err
+	}
+	if len(us) == 0 {
+		return errors.New("not found")
+	}
+	ad.Id = us[0].Id
+	return nil
+}
+
+func (d *Database) UpdateUser(us *model.User) error {
+	filter := bson.M{"id": us.Id}
+	update := bson.M{"$set": us}
+	_, err := d.u.UpdateOne(context.TODO(), filter, update)
+	return err
+}
+
+func (d *Database) QueryUser(page int) ([]model.User, error) {
+	pageSize := 10
+	skip := (page - 1) * pageSize
+	filter := bson.M{}
+	findOptions := options.Find()
+	findOptions.SetLimit(int64(pageSize))
+	findOptions.SetSkip(int64(skip))
+	cursor, err := d.u.Find(context.Background(), filter, findOptions)
+	if err != nil {
+		return []model.User{}, err
+	}
+
+	return lib.ParseUser(cursor)
+}
+
+func (d *Database) Search(data string) ([]model.User, error) {
+	filter := bson.M{"username": primitive.Regex{Pattern: fmt.Sprintf("^%s", data), Options: ""}}
+	c, err := d.u.Find(context.Background(), filter)
+	if err != nil {
+		return []model.User{}, err
+	}
+	us, err := lib.ParseUser(c)
+	if err != nil {
+		return []model.User{}, err
+	}
+	if len(us) > 10 {
+		us = us[:10]
+	}
+	return us, nil
 }
 
 func (d *Database) CreateUser(u *model.User) error {
