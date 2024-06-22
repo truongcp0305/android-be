@@ -11,7 +11,7 @@ import (
 
 func StartApp() {
 	db := repository.Connn()
-	repo := repository.NewDatabase(db.Collection("spend"), db.Collection("plan"), db.Collection("user"))
+	repo := repository.NewDatabase(db.Collection("spend"), db.Collection("plan"), db.Collection("user"), db.Collection("admin"))
 
 	userSv := service.NewUserService(repo)
 	spendSv := service.NewSpendService(repo)
@@ -31,5 +31,5 @@ func StartApp() {
 
 	config.NewRoute(e, ac)
 
-	go e.Logger.Fatal(e.Start("192.168.1.14:1234"))
+	go e.Logger.Fatal(e.Start("192.168.1.26:1234"))
 }

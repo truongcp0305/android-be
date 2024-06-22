@@ -2,6 +2,7 @@ package config
 
 import (
 	"android-be/controller"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -16,6 +17,11 @@ type AppController struct {
 func NewRoute(e *echo.Echo, app AppController) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"}, // Allow all origins
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
 
 	e.POST("/user/login", func(c echo.Context) error {
 		return app.U.Login(c)
@@ -61,6 +67,21 @@ func NewRoute(e *echo.Echo, app AppController) {
 
 	e.GET("/plan/key", func(c echo.Context) error {
 		return app.P.GetByKey(c)
+	})
+
+	e.POST("/admin/login", func(c echo.Context) error {
+		return app.U.AdLogin(c)
+	})
+	e.PUT("/admin/user", func(c echo.Context) error {
+		return app.U.ChangeInfo(c)
+	})
+
+	e.GET("/admin/search", func(c echo.Context) error {
+		return app.U.Search(c)
+	})
+
+	e.GET("/user/query", func(c echo.Context) error {
+		return app.U.QueryUser(c)
 	})
 
 	e.GET("", func(c echo.Context) error {
